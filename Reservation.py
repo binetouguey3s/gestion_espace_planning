@@ -42,7 +42,7 @@ class ReservationService:
         print("Réservation effectuée avec succès pour ces créneaux.")
 
 
-#fin  reserver par horaire
+#fin de reservatiion  par choix de creneaux horaires
 
     def _parse_date(self, date_str: str):
         try:
