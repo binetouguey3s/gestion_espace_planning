@@ -101,12 +101,12 @@ class Menu:
                     continue
                 motif = input("Motif (conference/reunion/atelier...): ").strip()
                 self.reservation.reserver(date_str, creneau_id, groupe_id, motif)
+                
             elif choix == "5":
                 self.reservation = ReservationService(self.db)
                 self._afficher_creneaux_et_groupes()
                 date_str = input("DATE (YYYY-MM-DD): ").strip()
                 try:
-                    # creneau_id = int(input("ID creneau: ").strip())
                     heure_debut = (input("Heure debut (HH:MN:SEC): ").strip())
                     heure_fin = input("Heure fin (HH:MN:SEC): ").strip()
                     groupe_id = int(input("ID du groupe: ").strip())
