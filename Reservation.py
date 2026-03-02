@@ -9,11 +9,47 @@ class ReservationService:
         self.db = db
         self.connection = self.db.connecter()
 
+    # autre chemin de reservation (par horaire)
+    def reserver_par_horaire(self, date_str: str, heure_debut: str, heure_fin: str, groupe_id: int, motif: str):
+        date_obj = self._parse_date(date_str)
+        if not date_obj:
+            print("Date invalide. Format attendu: YYYY-MM-DD")
+            return None
+        
+        cursor = self.connection.cursor(dictionary=True)
+
+        # Récupérer tous les créneaux dans l’intervalle que l' on veut choisir 
+        requete_creneaux = """ SELECT * FROM creneaux WHERE heure_debut >= %s AND heure_fin <= %s """
+        cursor.execute(requete_creneaux, (heure_debut, heure_fin))
+        creneaux = cursor.fetchall()
+
+        if not creneaux:
+            print("Aucun créneau trouvé dans cet intervalle.")
+            return
+        
+        for creneau in creneaux:
+            requete_conflit = """ SELECT * FROM reservations WHERE date_reservation = %s AND creneau_id = %s """
+            cursor.execute(requete_conflit, (date_obj, creneau["id_creneau"]))
+            if cursor.fetchone():
+                print(f"Conflit: le créneau  {creneau['heure_debut']} - {creneau['heure_fin']} est déjà réservé.")
+                return
+
+        for creneau in creneaux:
+            requete_insert = """ INSERT INTO reservations (date_reservation, creneau_id, groupe_id, motif) VALUES (%s, %s, %s, %s) """
+            cursor.execute(requete_insert, (date_obj, creneau["id_creneau"], groupe_id, motif))
+
+        self.connection.commit()
+        print("Réservation effectuée avec succès pour ces créneaux.")
+
+
+#fin  reserver par horaire
+
     def _parse_date(self, date_str: str):
         try:
             return datetime.strptime(date_str, "%Y-%m-%d").date()
         except ValueError:
             return None
+    
 
     def ajouter_groupe(self, nom_groupe: str, responsable: str):
         if not nom_groupe.strip() or not responsable.strip():
@@ -65,7 +101,7 @@ class ReservationService:
         cursor = self.connection.cursor()
         try:
             cursor.execute("SELECT id_creneau FROM creneaux WHERE id_creneau = %s", (creneau_id,))
-            if not cursor.fetchone():
+            if not cursor.fetchall():
                 print("ID creneau inexistant.")
                 return None
 
@@ -84,7 +120,7 @@ class ReservationService:
 
             cursor.execute(
                 """
-                INSERT INTO reservations (date_reservation, creneau_id, groupe_id, motif)
+                INSERT INTO reservations (date_reservation, creneau_id,  groupe_id, motif)
                 VALUES (%s, %s, %s, %s)
                 """,
                 (date_obj, creneau_id, groupe_id, motif.strip() or "Sans motif"),
