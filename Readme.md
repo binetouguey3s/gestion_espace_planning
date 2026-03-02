@@ -12,7 +12,7 @@ Application terminale Python pour gerer les reservations de la salle polyvalente
 - Export CSV des reservations valides.
 
 ## Prerequis
-- Python 3.10+
+- Python 3
 - MySQL Server
 - Package Python: `mysql-connector-python`, `bcrypt`
 
